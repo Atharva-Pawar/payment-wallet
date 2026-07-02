@@ -3,6 +3,7 @@ const z = require("zod");
 const { User } = require("../db");
 const userRouter = express.Router();
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const userSchemaValidation = z.object({
   firstName: z.string(),
@@ -25,7 +26,7 @@ userRouter.post("/signup", async (req, res) => {
   });
 
   if (checkUser) {
-    return res.json({
+    return res.status(411).json({
       msg: "email already taken / incorrect inputs",
     });
   }
