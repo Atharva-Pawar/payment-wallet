@@ -5,8 +5,7 @@ const { router } = require("./routers");
 
 app.use(cors());
 app.use(express.json());
-app.use();
 
-router.use("/api/v1", router)
+app.use("/api/v1", router)
 
 app.listen(3000);
