@@ -53,6 +53,32 @@ userRouter.post("/signup", async (req, res) => {
   });
 });
 
+userRouter.post("/signin", async (req, res)=>{
+  const {username, password} = req.body
+
+  const checkExistingUser = await User.findOne({
+    username,
+    password
+  })
+
+  if(!checkExistingUser){
+    return res.status(411).json({
+      msg: "error while logging in"
+    })
+  }
+
+  const getExistingUserId = checkExistingUser._id
+
+  const token = jwt.sign({
+    getExistingUserId
+  }, process.env.JWT_SECRET)
+
+  res.json({
+    msg: "login successful",
+    token: token
+  })
+})
+
 module.exports = {
   userRouter,
 };
