@@ -67,10 +67,10 @@ userRouter.post("/signin", async (req, res)=>{
     })
   }
 
-  const getExistingUserId = checkExistingUser._id
+  const userID = checkExistingUser._id
 
   const token = jwt.sign({
-    getExistingUserId
+    userID
   }, process.env.JWT_SECRET)
 
   res.json({
