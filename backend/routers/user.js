@@ -3,6 +3,7 @@ const z = require("zod");
 const { User } = require("../db");
 const userRouter = express.Router();
 const jwt = require("jsonwebtoken");
+const { authMiddleware } = require("../middlewares/middleware");
 require("dotenv").config();
 
 const userSchemaValidation = z.object({
@@ -53,31 +54,56 @@ userRouter.post("/signup", async (req, res) => {
   });
 });
 
-userRouter.post("/signin", async (req, res)=>{
-  const {username, password} = req.body
+userRouter.post("/signin", async (req, res) => {
+  const { username, password } = req.body;
 
   const checkExistingUser = await User.findOne({
     username,
-    password
-  })
+    password,
+  });
 
-  if(!checkExistingUser){
+  if (!checkExistingUser) {
     return res.status(411).json({
-      msg: "error while logging in"
-    })
+      msg: "error while logging in",
+    });
   }
 
-  const userID = checkExistingUser._id
+  const userID = checkExistingUser._id;
 
-  const token = jwt.sign({
-    userID
-  }, process.env.JWT_SECRET)
+  const token = jwt.sign(
+    {
+      userID,
+    },
+    process.env.JWT_SECRET,
+  );
 
   res.json({
     msg: "login successful",
-    token: token
-  })
-})
+    token: token,
+  });
+});
+
+const updateBody = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  password: z.string().min(6).optional(),
+});
+
+userRouter.put("/", authMiddleware, async (req, res) => {
+  const { success } = updateBody.safeParse(req.body);
+
+  if (!success) {
+    return res.status(411).json({
+      msg: "error while updating information",
+    });
+  }
+
+  await User.updateOne({ _id: req.userID }, req.body);
+
+  res.json({
+    msg: "update successfully",
+  });
+});
 
 module.exports = {
   userRouter,
