@@ -17,8 +17,8 @@ userRouter.post("/signup", async (req, res) => {
   const { success } = userSchemaValidation.safeParse(req.body);
 
   if (!success) {
-    return res.status(411).json({
-      msg: "email already taken / incorrect inputs",
+    return res.status(400).json({
+      msg: "Incorrect inputs",
     });
   }
 
@@ -27,8 +27,8 @@ userRouter.post("/signup", async (req, res) => {
   });
 
   if (checkUser) {
-    return res.status(411).json({
-      msg: "email already taken / incorrect inputs",
+    return res.status(409).json({
+      msg: "Email already taken",
     });
   }
 
@@ -53,9 +53,9 @@ userRouter.post("/signup", async (req, res) => {
     process.env.JWT_SECRET,
   );
 
-  res.json({
-    msg: "user created successfully",
-    token: token,
+  return res.status(201).json({
+    msg: "User created successfully",
+    token,
   });
 });
 
@@ -68,8 +68,8 @@ userRouter.post("/signin", async (req, res) => {
   });
 
   if (!checkExistingUser) {
-    return res.status(411).json({
-      msg: "error while logging in",
+    return res.status(401).json({
+      msg: "Invalid username or password",
     });
   }
 
@@ -82,9 +82,9 @@ userRouter.post("/signin", async (req, res) => {
     process.env.JWT_SECRET,
   );
 
-  res.json({
-    msg: "login successful",
-    token: token,
+  return res.status(200).json({
+    msg: "Login successful",
+    token,
   });
 });
 
@@ -98,15 +98,15 @@ userRouter.put("/", authMiddleware, async (req, res) => {
   const { success } = updateBody.safeParse(req.body);
 
   if (!success) {
-    return res.status(411).json({
-      msg: "error while updating information",
+    return res.status(400).json({
+      msg: "Error while updating information",
     });
   }
 
   await User.updateOne({ _id: req.userID }, req.body);
 
-  res.json({
-    msg: "update successfully",
+  return res.status(200).json({
+    msg: "Updated successfully",
   });
 });
 
@@ -128,7 +128,7 @@ userRouter.get("/bulk", async (req, res) => {
     ],
   });
 
-  res.json({
+  return res.status(200).json({
     user: users.map((user) => ({
       username: user.username,
       firstName: user.firstName,

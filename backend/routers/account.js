@@ -4,12 +4,18 @@ const app = express();
 const { authMiddleware } = require("../middlewares/middleware");
 const accountRouter = express.Router();
 
-accountRouter.get("/balance",authMiddleware, async (req, res) => {
+accountRouter.get("/balance", authMiddleware, async (req, res) => {
   const account = await Account.findOne({
     userId: req.userId,
   });
 
-  res.json({
+  if (!account) {
+    return res.status(404).json({
+      msg: "Account not found",
+    });
+  }
+
+  return res.status(200).json({
     balance: account.balance,
   });
 });
@@ -26,7 +32,7 @@ accountRouter.post("/transfer", authMiddleware, async (req, res, next) => {
   }).session(session);
 
   if (!account || account.balance < ammount) {
-    res.status(400).json({
+    return res.status(400).json({
       msg: "Insufficient Balance",
     });
   }
@@ -36,7 +42,7 @@ accountRouter.post("/transfer", authMiddleware, async (req, res, next) => {
   }).session(session);
 
   if (!toAccount) {
-    res.status(400).json({
+    return res.status(404).json({
       msg: "Invalid Account",
     });
   }
@@ -65,7 +71,7 @@ accountRouter.post("/transfer", authMiddleware, async (req, res, next) => {
 
   await session.commitTransaction();
 
-  res.json({
+  return res.status(200).json({
     msg: "Transfer Successful",
   });
 });
